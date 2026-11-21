@@ -1,34 +1,50 @@
-# IntelliSchedule AI – AI-Driven University Timetable Optimization and Predictive Scheduling
+# IntelliSchedule AI
 
-IntelliSchedule AI is a Python course project for generating conflict-free university timetables. It combines a custom CSP solver (backtracking, dynamic MRV, degree tie-breaking, and forward checking) with Simulated Annealing as the main soft-constraint optimizer. Tabu Search and Hill Climbing are comparison baselines; Means-Ends Analysis repairs schedules after staff or room disruptions.
+**AI-driven university timetable generation, optimization and disruption repair, built in Python with a Streamlit interface.**
 
-> **Synthetic ML data:** the bundled demo and default Random Forest training data are synthetic; no real student attendance history or institutional records are included. The app can train on user-uploaded historical files. Synthetic-only model scores are illustrative and do not establish real-world accuracy.
+IntelliSchedule AI builds conflict-free weekly timetables with a custom **Constraint Satisfaction (CSP)** solver, improves them with **metaheuristic search** (Simulated Annealing, Tabu Search, Hill Climbing), repairs them after disruptions with **Means-Ends Analysis**, and uses **Random Forest** models to estimate attendance and course demand.
 
-## Features
+> **Note on ML data:** the bundled demo data and the default Random Forest training data are **synthetic**. No real attendance or institutional records are included. Synthetic-only model scores are illustrative and do not show real-world accuracy. The app can train on your own historical files.
 
-- Hard constraints: no teacher, room, or overlapping student-group clashes; room capacity/type; two consecutive slots for labs; teacher availability and daily teaching-hour limits.
-- Soft objective: reduce group timetable gaps and daily-load imbalance, avoid adjacent heavy/same-subject classes, respect teacher preferences, and favor slots with higher predicted attendance.
-- Electives: a course may list multiple group IDs (`G01|G02`); all listed groups are reserved together.
-- Import four CSV or Excel worksheets/files: `courses`, `teachers`, `rooms`, and `groups`.
-- Group, teacher, and room timetable views, plus hard-conflict detection.
-- Disruption repair for an absent teacher/day or unavailable room, minimizing changed meetings.
-- Algorithm comparison with hard violations, soft score, runtime, and teacher-load fairness.
-- CSV, Excel, and PDF exports; SQLite stores generated run history.
-- Eight working workspaces: AI Command Center, Generation, Optimization Lab, ML Predictions, Rescheduling, Timetable Explorer, Analytics, and Data Management.
-- Persistent in-session Light/Dark themes with explicit palette-aware tables and Plotly charts.
-- A live 8-section homepage demonstration runs the actual CSP and Simulated Annealing, reports measured cost/idle-time changes, and lists any moved classes.
-- Simulated Annealing exposes temperature/cooling controls, an adaptive feasible-neighborhood size, reheating, early stopping, and accepted/rejected-move diagnostics.
-- Rescheduling scenarios are preview-only until explicitly applied; teacher absences, room/equipment outages, enrollment increases, and added classes use CSP-guided repair.
-- An ML Impact Explorer compares optimized schedules with the attendance objective enabled and disabled while keeping other preference weights and hard constraints fixed.
-- A measured objective breakdown and schedule-placement explanations expose the active soft-cost terms and checked local alternatives.
-- CSP diagnostics include variable/constraint counts, search nodes, backtracks, and elapsed time. Search has node and wall-clock bounds; failures are reported explicitly.
-- Optimization runs expose per-iteration current/best cost, accepted moves, stop reason, and runtime-bounded convergence data.
-- The ML center reports chronological/row-order holdout MAE, RMSE, R², actual-vs-predicted values, feature importance, weekday/time heatmaps, and course-demand forecasts.
-- Optional historical files can train attendance and demand models. Explicit `preference_feedback.csv` trains preference weights separately from attendance prediction.
-- Rescheduling supports teacher absence, changed availability slots, room closure, a lab-equipment outage at a selected room, and adding a new class. It reports changed meetings and a disruption cost.
-- A smaller 8-section quick-demo instance is provided alongside the 110-section demo.
+---
+
+## Highlights
+
+- **Hard-constraint guarantee:** no teacher, room or student-group clashes; room capacity and type; equipment; teacher availability and daily-hour limits; labs occupy two consecutive slots.
+- **Custom CSP solver:** backtracking with dynamic MRV, degree tie-breaking and forward checking, bounded by node and wall-clock limits.
+- **Three optimizers on one objective:** Simulated Annealing, Tabu Search and Hill Climbing, all starting from the same CSP seed and never accepting a hard-infeasible move.
+- **Disruption repair:** teacher absence, changed availability, room closure, lab-equipment outage, enrollment increase, or a newly added class. Repairs are previewed first and applied only on request.
+- **ML layer:** attendance and demand forecasting, with a separately trained preference-weight model.
+- **Explainability:** objective breakdown, placement explanations and CSP diagnostics (nodes, backtracks, time).
+- **Import and export:** CSV/Excel in; CSV, Excel and PDF out; SQLite run history.
+- **Tested:** 18 unit tests covering the solver, optimizers, repair, exports, ML and validation.
+
+---
+
+## Interface
+
+The app has eight workspaces, plus a Light/Dark theme switch in the sidebar.
+
+| Tab | Purpose |
+|---|---|
+| ✦ Overview | Dataset summary and a live demo that runs the real CSP and Simulated Annealing on the 8-section sample |
+| ◉ Generate | Build a feasible timetable with the CSP solver and view diagnostics |
+| ↗ Optimize | Run and compare optimizers; per-iteration cost traces; Simulated Annealing controls (temperature, cooling, reheating, early stopping) |
+| ◎ ML Insights | Holdout metrics, feature importance, weekday/time heatmaps, demand forecasts, ML Impact Explorer |
+| ⟳ Repair | Disruption scenarios with changed-meeting count and disruption cost |
+| ▦ Timetable | Group, teacher and room views; hard-conflict detection |
+| ◫ Analytics | Idle periods, room utilization, teacher-load fairness |
+| ⚙ Data | Upload, validate and manage datasets; run history |
+
+The sidebar offers three data sources: **Demo campus** (110 sections), **Quick demo** (8 sections) and **Upload my data**.
+
+---
 
 ## Quick start
+
+Requires Python 3.10+.
+
+**Windows (PowerShell)**
 
 ```powershell
 py -m venv .venv
@@ -38,46 +54,29 @@ py scripts\generate_demo_data.py
 py -m streamlit run app.py
 ```
 
-The app loads the 110-section demo on startup. In the sidebar, select **Quick demo** for faster experiments, or **Upload my data** to import university tables. The large instance contains 110 sections (220 weekly meetings), 35 teachers, 10 student groups, and 16 rooms. Both datasets are generated by `scripts/generate_demo_data.py`; CSV files are included under `demo_data/`.
+**macOS / Linux**
 
-Use the sidebar **Light / Dark** selector to switch the app's palette. On the Overview, the interactive demonstration runs on the included 8-section quick sample and does not replace the active timetable. A repair result is also shown as a preview; choose **Apply repaired timetable** only when you want to make it active.
-
-Run the evaluation report and test suite:
-
-```powershell
-py scripts\evaluate.py
-py scripts\generate_project_documentation.py
-py -m unittest discover -s tests -v
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+python scripts/generate_demo_data.py
+streamlit run app.py
 ```
 
-The documentation generator writes `IntelliSchedule_AI_Project_Documentation.pdf`, a full 20-page
-project reference covering the implemented architecture, algorithms, ML, scenarios, interface,
-measured evaluation, tests, setup, and limitations.
+The app loads the 110-section demo on startup. The demo campus has **110 sections (220 weekly meetings), 35 teachers, 10 student groups and 16 rooms**. The quick demo is a much smaller instance for fast experiments.
 
-## Input data schema
+Run the evaluation and tests:
 
-Upload one file per table. CSV is supported directly; Excel files use their first worksheet and the same column names.
+```bash
+python scripts/evaluate.py                        # writes evaluation_report.md
+python scripts/generate_project_documentation.py  # writes the 20-page PDF
+python -m unittest discover -s tests -v           # 18 unit tests
+```
 
-| File | Required columns | Optional columns |
-|---|---|---|
-| `courses` | `course_id`, `teacher_id`, `group_id` or `group_ids` | `course_name`, `subject`, `department`, `enrollment`, `room_type` (`lecture`/`lab`), `duration` (1 or 2), `sessions_per_week`, `heavy`, `required_equipment` |
-| `teachers` | `teacher_id` | `name`, `max_hours_per_day`, `available_slots`, `preferred_slots` |
-| `rooms` | `room_id`, `room_type`, `capacity` | `equipment` |
-| `groups` | `group_id` | `name`, `size` |
+---
 
-`group_ids` accepts pipe- or comma-separated group IDs. Slot restrictions use weekday and zero-based slot tokens, for example `Mon:0|Tue:3`. `available_slots` left blank or set to `*` means all slots; blank `preferred_slots` means no preference. The default week has Monday-Friday and eight one-hour slots from 08:00 to 16:00. If enrollment is blank, the largest listed group size is used.
-
-Course rows may include `department` and `required_equipment`; room rows may include pipe/comma-separated `equipment`. Lab meetings always occupy two consecutive slots. Upload filenames should be `courses`, `teachers`, `rooms`, `groups`, or optionally `attendance`, `enrollment`, `preference_feedback` (CSV/Excel).
-
-### Optional machine-learning history
-
-- `attendance`: `date`, `subject`, `weekday`, `time_slot` (zero-based), `enrollment`, `course_type`, optional `previous_attendance`, and target `attendance` (fraction or percentage). Records are date-sorted when `date` exists; otherwise file row order is treated as history. The last 20% is held out for model metrics.
-- `enrollment`: `date`, `department`, `course_type`, `historical_enrollment`, optional `offered_sections` and `elective`, and target `expected_enrollment`. The last 20% is held out for demand metrics.
-- `preference_feedback`: numeric features `student_gaps`, `daily_load_imbalance`, `heavy_adjacent`, `teacher_preference_misses`, `teacher_gaps`, and target `preference_rating` (at least 8 rows). This trains a separate preference-weight model. Attendance predictions do **not** learn preference weights.
-
-If historical data is absent, repeatable synthetic records train the Random Forests. Their holdout scores describe only that synthetic process and are not estimates of real institutional accuracy. Predicted demand is advisory; mandatory room capacity always uses official course enrollment.
-
-## Architecture
+## How it works
 
 ```mermaid
 flowchart TD
@@ -86,9 +85,9 @@ flowchart TD
     C --> C1[MRV + degree + forward checking]
     C --> D[Feasible seed timetable]
     D --> E[Simulated Annealing]
-    D --> F[Tabu Search baseline]
-    D --> G[Hill Climbing baseline]
-    H[Synthetic Random Forest models] --> E
+    D --> F[Tabu Search]
+    D --> G[Hill Climbing]
+    H[Random Forest models] --> E
     H --> F
     H --> G
     E --> I[Conflict detector and metrics]
@@ -102,41 +101,137 @@ flowchart TD
     N --> I
 ```
 
-## Algorithms and evaluation
+### 1. Problem model
+Each meeting is assigned a **(day, start slot, room)**. The default week is Monday to Friday with eight one-hour slots from 08:00 to 16:00. Electives are modeled by listing several group IDs on one course (`G01|G02`); all listed groups are reserved together.
 
-The CSP solver creates a domain of legal room/day/start placements per meeting. It selects the next variable by minimum remaining legal values, breaks ties by the number of unassigned conflicting variables, and forward-checks neighboring domains after each assignment. An explicit node limit prevents unbounded search on infeasible inputs.
+### 2. CSP solver (`timetable/constraints.py`)
+Builds a domain of legal placements per meeting, picks the next variable by **minimum remaining values**, breaks ties by the number of conflicting unassigned variables, and **forward-checks** neighboring domains after each assignment. A node limit and timeout prevent unbounded search. Failure means "no solution found within the bound", not proof of infeasibility.
 
-The optimizer changes one meeting at a time while preserving hard feasibility. The weighted objective combines student idle gaps, daily-load variance, adjacent heavy/same-subject classes, teacher preference misses, teacher idle gaps, room-load balance, teacher-load variance, and attendance-weighted slot utility. The exact values are available in the ML Predictions workspace. The Random Forests use a batched inference path so full demo optimization remains responsive.
+### 3. Soft-constraint objective (`timetable/optimizer.py`)
+Optimizers minimize a weighted cost combining:
 
-`scripts/evaluate.py` runs all three optimizers from a shared CSP seed and writes a 10-section `evaluation_report.md` with measured cost improvement, idle periods, fairness, runtime, completed iterations, and hard-constraint validation. The app can export the report and per-run CSV reports. Results depend on hardware, package versions, and the synthetic instance; they are course-project measurements, not general performance guarantees.
+- student idle gaps
+- daily-load variance per group
+- adjacent heavy or same-subject classes
+- teacher preference misses
+- teacher idle gaps
+- classroom-load balance
+- teacher-load variance
+- attendance-weighted slot utility (from the ML model)
 
-## Project layout
+The app shows the measured per-term breakdown, and the terms sum to the total cost.
 
-```text
-app.py                    Streamlit UI
-timetable/
-  constraints.py          Hard constraints, validation, CSP
-  data.py                 CSV/Excel imports and exports
-  ml.py                   Attendance/demand forests and explicit preference learning
-  analytics.py            Constraint counts and factual decision explanations
-  models.py               Typed scheduling domain
-  optimizer.py            Objective, SA, Tabu, Hill Climbing
-  reschedule.py           Means-Ends repair
-  storage.py              SQLite run history
-scripts/
-  evaluate.py             Reproducible algorithm comparison
-  generate_project_documentation.py  20-page project PDF generator
-  generate_demo_data.py   Synthetic 110-section CSV generator
-demo_data/                Included demo CSV tables
-tests/                    Unit tests for core scheduling behavior
+### 4. Optimizers
+- **Simulated Annealing:** single-meeting feasible moves, exponential cooling, Metropolis acceptance, adaptive neighborhood size, reheating, early stopping, and accepted/rejected-move diagnostics.
+- **Tabu Search:** sampled feasible neighborhood, reverse-move tabu tenure, aspiration when a move beats the global best.
+- **Hill Climbing:** best sampled feasible neighbor; stops after a stagnation limit.
+
+Every final schedule is re-validated against the hard constraints.
+
+### 5. Disruption repair (`timetable/reschedule.py`)
+A bounded, CSP-guided **Means-Ends Analysis** heuristic compares the current schedule to the desired state and moves as few meetings as possible, allowing a small cascade to move a direct blocker. It does not guarantee a globally optimal repair.
+
+### 6. Machine learning (`timetable/ml.py`)
+- **Attendance model:** Random Forest on subject, weekday, time slot, enrollment, course type and previous attendance.
+- **Demand model:** Random Forest on department, course type, historical enrollment, offered sections and elective flag.
+- **Preference model:** trained *separately* from explicit `preference_feedback` rows. Attendance prediction never learns preference weights.
+- Predicted demand is advisory only. **Room capacity always uses official enrollment.**
+- Holdout is chronological when a `date` column exists, otherwise row order (last 20%).
+
+---
+
+## Measured results
+
+From `scripts/evaluate.py` on the 220-meeting demo (seed 42, up to 150 iterations or 12 s per optimizer, same CSP seed for all):
+
+| Algorithm | Initial cost | Final cost | Improvement | Student idle periods | Hard violations |
+|---|---:|---:|---:|---:|---:|
+| CSP seed (baseline) | 941.2 | 941.2 | 0.0% | 78 | 0 |
+| Simulated Annealing | 941.2 | 884.9 | 6.0% | 58 | 0 |
+| Tabu Search | 941.2 | 805.8 | 14.4% | 48 | 0 |
+| Hill Climbing | 941.2 | 777.8 | 17.4% | 36 | 0 |
+
+- CSP found a full schedule in 220 nodes with 0 backtracks (about 24.6 s wall time).
+- On this instance and iteration budget, Hill Climbing reached the lowest cost. This is an instance-specific observation, not a universal ranking. Simulated Annealing is usually slower to improve under a small iteration budget; longer runs or tuned temperature/cooling may change the order.
+- **ML holdout (synthetic data):** attendance MAE 0.039 (R² 0.59); demand MAE 5.8 students (R² 0.98). These describe the synthetic data process only.
+- Results depend on hardware, package versions and the synthetic instance.
+
+See `evaluation_report.md` for the full 10-section report.
+
+---
+
+## Input data
+
+Upload one file per table (CSV, or Excel using the first worksheet). Filenames should be `courses`, `teachers`, `rooms`, `groups`, and optionally `attendance`, `enrollment`, `preference_feedback`.
+
+| File | Required columns | Optional columns |
+|---|---|---|
+| `courses` | `course_id`, `teacher_id`, `group_id` or `group_ids` | `course_name`, `subject`, `department`, `enrollment`, `room_type` (`lecture`/`lab`), `duration` (1 or 2), `sessions_per_week`, `heavy`, `required_equipment` |
+| `teachers` | `teacher_id` | `name`, `max_hours_per_day`, `available_slots`, `preferred_slots` |
+| `rooms` | `room_id`, `room_type`, `capacity` | `equipment` |
+| `groups` | `group_id` | `name`, `size` |
+
+**Notes**
+
+- `group_ids` accepts pipe- or comma-separated IDs. If `enrollment` is blank, the largest listed group size is used.
+- Slot tokens use weekday and zero-based slot, e.g. `Mon:0|Tue:3`. A blank or `*` value in `available_slots` means all slots; a blank `preferred_slots` means no preference.
+- Lab meetings always occupy two consecutive slots.
+- Rooms may list pipe/comma-separated `equipment`; courses may require some via `required_equipment`.
+
+**Optional ML history**
+
+- `attendance`: `date`, `subject`, `weekday`, `time_slot`, `enrollment`, `course_type`, optional `previous_attendance`, target `attendance` (fraction or percent).
+- `enrollment`: `date`, `department`, `course_type`, `historical_enrollment`, target `expected_enrollment`, optional `offered_sections`, `elective`.
+- `preference_feedback`: `student_gaps`, `daily_load_imbalance`, `heavy_adjacent`, `teacher_preference_misses`, `teacher_gaps`, target `preference_rating` (at least 8 rows).
+
+Example files are in `demo_data/` and `demo_data/quick/`.
+
+---
+
+## Project structure
+
 ```
+app.py                      Streamlit UI (8 workspaces)
+timetable/
+  models.py                 Typed domain: Teacher, Room, Meeting, Placement, Problem
+  constraints.py            Hard constraints, occupancy tracking, validation, CSP solver
+  optimizer.py              Objective, metrics, SA / Tabu / Hill Climbing
+  reschedule.py             Means-Ends disruption repair and disruption cost
+  ml.py                     Attendance/demand forests, preference learning
+  analytics.py              Constraint counts and placement explanations
+  data.py                   CSV/Excel import, validation, Excel/PDF export
+  storage.py                SQLite run, dataset and experiment history
+scripts/
+  generate_demo_data.py     Synthetic 110-section dataset generator
+  evaluate.py               Reproducible algorithm comparison
+  generate_project_documentation.py   20-page project PDF
+tests/test_timetable.py     18 unit tests
+demo_data/                  Full and quick demo CSV tables
+evaluation_report.md        Measured evaluation report
+IntelliSchedule_AI_Project_Documentation.pdf   Full project reference
+```
+
+**Tech stack:** Python, Streamlit, pandas, NumPy, scikit-learn, Plotly, openpyxl, ReportLab, SQLite.
+
+---
 
 ## Limitations
 
-- This is a deterministic weekly-slot planning prototype, not a production SIS/HR integration.
-- Electives are represented through overlapping group memberships; student-level enrollment lists and room assignment by accessibility are not modeled.
-- Random Forest estimates are intentionally synthetic. Training on real data requires governance, consent/privacy review, feature engineering, and validation.
-- The CSP node limit may be reached for overloaded or poorly constrained data; add capacity or revise constraints rather than treating an incomplete result as valid.
-- Disruption repair is a bounded, CSP-guided Means-Ends heuristic. It preserves unaffected placements when feasible and allows a small cascade to direct blockers; it does not guarantee a globally optimal repair.
-- The attendance and demand holdouts are chronological only when rows have a usable date/order. Synthetic validation is deliberately labeled and should not be presented as institutional model performance.
-- The current room utilization statistic is scheduled seat-time divided by available room-hours; it does not represent actual seat occupancy or building energy use.
+- A deterministic weekly-slot **prototype**, not a production SIS/HR integration.
+- Equal-length slots; no travel time, multi-campus distances or individual student enrollment lists; no accessibility-based room assignment.
+- Random Forest models trained on synthetic data show process fit only. Real use needs governance, privacy review, feature engineering and validation.
+- The CSP and repair searches are bounded and can fail on overloaded or poorly constrained data. CSP generation on the 220-meeting demo takes tens of seconds.
+- Room utilization is scheduled seat-time divided by available room-hours, not actual occupancy.
+
+## Roadmap
+
+- Integrate authorized attendance and enrollment histories
+- Add campus travel-time and room-accessibility constraints
+- Benchmark on multiple real-world instances with multi-seed confidence intervals
+- Benchmark the custom CSP against OR-Tools
+- Speed up CSP generation for large instances
+
+## Documentation
+
+- `IntelliSchedule_AI_Project_Documentation.pdf`: architecture, algorithms, ML, scenarios, evaluation, tests and setup
+- `evaluation_report.md`: measured algorithm comparison
