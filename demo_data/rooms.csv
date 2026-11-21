@@ -1,0 +1,17 @@
+room_id,capacity,room_type,equipment
+L01,80,lecture,
+L02,100,lecture,
+L03,60,lecture,
+L04,80,lecture,
+L05,100,lecture,
+L06,60,lecture,
+L07,80,lecture,
+L08,100,lecture,
+L09,60,lecture,
+L10,80,lecture,
+L11,100,lecture,
+L12,60,lecture,
+B01,70,lab,computing|electronics
+B02,50,lab,computing|electronics
+B03,70,lab,computing|electronics
+B04,50,lab,computing|electronics

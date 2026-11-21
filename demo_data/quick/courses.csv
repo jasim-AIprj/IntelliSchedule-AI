@@ -1,0 +1,9 @@
+course_id,course_name,subject,department,teacher_id,group_ids,enrollment,room_type,duration,sessions_per_week,heavy,required_equipment
+Q101,Intro to Computing,Computing,Computing,QT1,QG1,28,lecture,1,2,false,
+Q102,Programming Lab,Programming,Computing,QT2,QG1,28,lab,2,1,false,computing
+Q103,Applied Statistics,Statistics,Science,QT3,QG1|QG2,48,lecture,1,2,true,
+Q104,Engineering Design,Design,Engineering,QT4,QG2,24,lecture,1,2,false,
+Q105,Electronics Lab,Electronics,Engineering,QT2,QG2,24,lab,2,1,false,electronics
+Q106,Academic Writing,Writing,Arts,QT5,QG1|QG2,48,lecture,1,1,false,
+Q107,Data Systems,Databases,Computing,QT1,QG2,24,lecture,1,2,true,
+Q108,Digital Logic,Systems,Engineering,QT4,QG1,28,lecture,1,2,false,

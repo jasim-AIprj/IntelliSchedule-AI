@@ -1,0 +1,4 @@
+room_id,capacity,room_type,equipment
+QL1,60,lecture,
+QL2,40,lecture,
+QBL1,36,lab,computing|electronics
